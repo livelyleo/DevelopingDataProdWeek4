@@ -1,0 +1,85 @@
+---
+title: "Developing Data Products Week 4 Assignment"
+author: "Shikha Jain"
+date: "June 6, 2018"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Data selected
+
+This project is a part of Coursera course Developing Data Projects, week 4 assignment.
+In this project we investigate the statistics of California Fires due to Arsons.
+Data is obtained from 
+http://www.fire.ca.gov/communications/downloads/fact_sheets
+/ArsonCaused.pdf
+
+```{r echo=TRUE, warning=FALSE, message=FALSE}
+data<-read.csv("Data1.csv")
+library(plotly)
+data<-as.data.frame(data)
+```
+
+## Background code
+To prepare for the application, we have created one single file with both ui() and Server() functions. They are uploaded on Github.
+Below is the code for the ui() function.
+```{r echo=TRUE, eval=FALSE}
+ui <- fluidPage(
+   # Application title
+   titlePanel("Statistics on California State Fires"),
+   # Sidebar with a slider input for number of bins 
+   sidebarLayout(
+      sidebarPanel(
+        fluidRow(column(8,
+         radioButtons("buttons","Type of Statistic:",c("Plot No. of Fires per year (Color code: Acres Burned)"="plot1","Plot the amount of damage caused for number of acres burned (color code: No. of Fires)"="plot2"))))
+      ),
+      
+      # Show a plot of the generated distribution
+      mainPanel(
+         plotlyOutput("distPlot")
+      )
+   )
+)
+```
+
+## Background code
+As seen on the previous slide, there are two ways the data can be plotted. We have used interactive feature of plotly to make the application lively.\n
+
+1. We can plot the total number of fires that took place in the state of California for each individual year. The color code represents the total acres of land burned during those fires.
+
+2. In the second plot we look at the total damage occurred due to those fires as a function of acres burned. We correlate the total number of fires with the damage cost as color code representation.
+
+## Background Code
+Below shown is the code for function server()
+```{r eval=FALSE, echo=TRUE}
+server <- function(input, output) {
+  data<-as.data.frame(data)
+  colnames(data)<-c("Year","No.Of.Fires","Acres.Burned","Cost.Of.Damage")
+  output$distPlot <- renderPlotly({
+     if(input$buttons=="plot1")
+     {plot_ly(data,x=data$Year,y=data$No.Of.Fires,type="bar",color=data$Acres.Burned)%>%layout(xaxis=list(title="Year"),yaxis=list(title="No. of Fires"),legend=list(titlePanel="Acres Burned"))
+       
+     } else
+     if(input$buttons=="plot2")
+     {plot_ly(data,x=data$Acres.Burned,y=data$Cost.Of.Damage,color=data$No.Of.Fires,size=data$No.Of.Fires,mode="markers") %>% layout(xaxis=list(title="Acres Burned"),yaxis=list(title="Cost of Damage"),legend=list(title="No. Of Fires"))
+     }
+   })
+}
+```
+
+## Plot 1
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+colnames(data)<-c("Year","No.Of.Fires","Acres.Burned","Cost.Of.Damage")
+p<-plot_ly(data,x=data$Year,y=data$No.Of.Fires,type="bar",color=data$Acres.Burned)%>%layout(xaxis=list(title="Year"),yaxis=list(title="No. of Fires"),legend=list(title="Acres Burned"))
+p
+```
+
+## Plot 2
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+plot_ly(data,x=data$Acres.Burned,y=data$Cost.Of.Damage,color=data$No.Of.Fires,size=data$No.Of.Fires,mode="markers") %>% layout(xaxis=list(title="Acres Burned"),yaxis=list(title="Cost of Damage"),legend=list(title="No. Of Fires"))
+
+```
+
